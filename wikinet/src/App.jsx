@@ -40,8 +40,8 @@ const BookResultCard = ({title, author, onAdd, onSelect}) => {
         <div>
             <h2>{title}</h2>
             <p>{author}</p>
-            <button onClick={onAdd}>Add to list</button> 
-            <button onClick={onSelect}>More info</button>
+            <button className="btn" onClick={onAdd}>Add to list</button> 
+            <button className="btn" onClick={onSelect}>More info</button>
         </div>
     ); // calls onAdd passed function kinda lambda like?
 }
@@ -118,32 +118,38 @@ const BookSearch = () => {
     // form for the search, then loads the replys from API
     return (
         <div>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="flex flex-col items-center">
                 <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search book..."
                 />
-                <button type="submit">Search</button>
+                <button className="btn btn-primary" type="submit">Search</button>
             </form>
             {loading && <p>Searching...</p>}
-            {results.map(book => (
-                <BookResultCard
-                    title={book.title}
-                    author={book.author_name?.[0]}
-                    onAdd={() => addBook(book)}
-                    onSelect={() => fetchBookDetails(book)}
-                />
-            ))}
+            <ul className="list rounded-box shadow-md">
+                {results.map(book => (
+                    <li className="list-row">
+                        <BookResultCard
+                            title={book.title}
+                            author={book.author_name?.[0]}
+                            onAdd={() => addBook(book)}
+                            onSelect={() => fetchBookDetails(book)}
+                        />
+                    </li>
+                ))}
+            </ul>
             {selectedBook && (
                 <div>
                     <h2>{selectedBook.title}</h2>
                     <p>{getDescription(selectedBook.description)}</p>
                     <div>
                     <h3>Book topics and subjects: </h3>
-                        <ol>
+                        <ol className="list rounded-box shadow-md">
                         {selectedBook.subjects?.slice(0,5).map((subject, i) => (
-                            <li><span key={i}>{subject}</span></li>
+                            <li className="list-row">
+                                <span key={i}>{subject}</span>
+                            </li>
                         ))}
                         </ol>
                     </div>
