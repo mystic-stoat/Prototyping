@@ -8,14 +8,17 @@ const books = [
     {title: "Neuromancer", author: "Gibson"}
 ]
 
+
 const BookCard = (props) => {
     // format book information
+    console.log(props)
     return (
         <div>
             <h2>{props.title}</h2>
             <p>{props.author}</p>
+            <p>{props.book_key}</p>
         </div>
-    )
+    );
 }
 
 const Counter = () => {
@@ -30,11 +33,56 @@ const Counter = () => {
     );
 }
 
+const BookResultCard = ({title, author, onAdd, onSelect}) => {
+    // format book information
+
+    return (
+        <div>
+            <h2>{title}</h2>
+            <p>{author}</p>
+            <button onClick={onAdd}>Add to list</button> 
+            <button onClick={onSelect}>More info</button>
+        </div>
+    ); // calls onAdd passed function kinda lambda like?
+}
+
+const BookList = ({ bookList }) => {
+    console.log("bookList is:", bookList);
+    if (bookList.length > 0){
+        return (
+            <div>
+            {bookList.map((book) => (
+                <BookCard
+                    book_key={book.key}
+                    title={book.title}
+                    author={book.author_name}
+                />
+            ))}
+            </div>
+        );
+    }
+}
 
 const BookSearch = () => {
     const [query, setQuery] = useState("");
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [bookList, setBookList] = useState([]);
+    const [selectedBook, setSelectedBook] = useState(null);
+
+    const fetchBookDetails = async(book) => {
+        // gonna add more data before its added to the booklist
+        setLoading(true);
+        const url = `https://openlibrary.org${book.key}.json`;
+        const response = await fetch(url);
+        const data = await response.json();
+        setSelectedBook(data);
+        setLoading(false);
+    }
+
+    const addBook = (book) => {
+        setBookList([...bookList, book]);
+    }
 
     // nested API search function
     const handleSearch = async () => {
@@ -52,6 +100,21 @@ const BookSearch = () => {
         e.preventDefault();
         handleSearch();
     }
+    const getDescription = (description) => {
+        if (!description) return "No description Available";
+        else if (typeof description === "string") {
+            return (
+                <div>
+                    <h3> Description: </h3>
+                    <p>{description}</p>
+                </div>
+            )
+        }
+        else {
+            console.error("getDescription error");
+            return "No description Available";
+        }
+    }
     // form for the search, then loads the replys from API
     return (
         <div>
@@ -61,22 +124,40 @@ const BookSearch = () => {
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search book..."
                 />
-                <button onClick="submit">Search</button>
+                <button type="submit">Search</button>
             </form>
             {loading && <p>Searching...</p>}
             {results.map(book => (
-                <BookCard
+                <BookResultCard
                     title={book.title}
                     author={book.author_name?.[0]}
+                    onAdd={() => addBook(book)}
+                    onSelect={() => fetchBookDetails(book)}
                 />
             ))}
+            {selectedBook && (
+                <div>
+                    <h2>{selectedBook.title}</h2>
+                    <p>{getDescription(selectedBook.description)}</p>
+                    <div>
+                    <h3>Book topics and subjects: </h3>
+                        <ol>
+                        {selectedBook.subjects?.slice(0,5).map((subject, i) => (
+                            <li><span key={i}>{subject}</span></li>
+                        ))}
+                        </ol>
+                    </div>
+                </div>
+                    
+            )}
+            <h2>My Book List</h2>
+            <BookList bookList={bookList} />
         </div>
-    )
+    );
 }
 
 
 
-// random code I found from a w3 tutorial: https://www.w3schools.com/react/react_getstarted.asp
 class App extends Component {
     render() {
         return (
